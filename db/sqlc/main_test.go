@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
 	"os"
 	"testing"
@@ -14,15 +14,17 @@ const (
 )
 
 var testQueries *Queries
+var testConn *pgxpool.Pool
 
 func TestMain(m *testing.M) {
-	conn, err := pgx.Connect(context.Background(), dbSource)
+	var err error
+	testConn, err = pgxpool.New(context.Background(), dbSource)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer conn.Close(context.Background())
+	defer testConn.Close()
 
-	testQueries = New(conn)
+	testQueries = New(testConn)
 
 	os.Exit(m.Run())
 }
